@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breakwater-integrated WECs</title>
+  
+  <!-- Include jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- Include DataTables CSS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  
+  <!-- Include DataTables JS -->
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      display:flex;
+      flex-direction: column;
+      padding: 0 px;
+      background-color: #f4f4f4;
+      padding-top: 4.3em; /* same as the navbar height */
+    }
+
+    .content {
+      flex: 1;  /* This will make the content grow and push footer to the bottom */
+      padding-top: 4.3em; /* same as the navbar height */
+    }
+    
+    table {
+      width: 100%;
+      margin: 20px 0;
+    }
+    #csv-table {
+      border-collapse: collapse;
+    }
+    #csv-table th,
+    #csv-table td {
+      padding: 2px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    #csv-table th {
+      background-color: #04AA6D;
+      color: white;
+    }
+
+  </style>
+</head>
+<body>
+
+
+  <table id="csv-table">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    $(document).ready(function() {
+      $.ajax({
+        url: 'data.csv',  // Ensure the file is in the same folder
+        dataType: 'text',
+      }).done(function(csvData) {
+        // Remove any empty lines and split CSV into rows
+        const rows = csvData.split("\n").filter(row => row.trim() !== "");
+        const headers = rows[0].split(",");
+        const data = rows.slice(1).map(row => row.split(","));
+
+        // Build table header
+        let headerHtml = '';
+        headers.forEach(header => {
+          headerHtml += `<th>${header.trim()}</th>`;
+        });
+        $('#csv-table thead').html(`<tr>${headerHtml}</tr>`);
+
+        // Build table rows
+        let bodyHtml = '';
+        data.forEach(row => {
+          bodyHtml += `<tr>${row.map((cell, index) => {
+            // Check for the "Relevant papers" column (index 13)
+            if (index === 13) {
+              // Remove wrapping quotes, if any
+              let cleanCell = cell.trim().replace(/^"|"$/g, '');
+              // Check if there are multiple links separated by a semicolon
+              if (cleanCell.indexOf(';') !== -1) {
+                const links = cleanCell.split(';');
+                return `<td>${links.map(link => {
+                  const trimmed = link.trim();
+                  return `<a href="${trimmed}" target="_blank">${trimmed}</a>`;
+                }).join('<br/>')}</td>`;
+              } else {
+                // Only one link in the cell
+                return `<td><a href="${cleanCell}" target="_blank">${cleanCell}</a></td>`;
+              }
+            }
+            return `<td>${cell.trim()}</td>`;
+          }).join('')}</tr>`;
+        });
+        $('#csv-table tbody').html(bodyHtml);
+
+        // Initialize DataTables
+        $('#csv-table').DataTable({
+          "pageLength": 10,  // Default number of rows per page
+          "lengthMenu": [5, 10, 25, 50],  // Options for rows per page
+          "columnDefs": [
+            {
+              "targets": -1, // Index of the "Figures" column (last column)
+              "visible": false // Hide the "Figures" column
+            },          
+          ]
+});
+      }).fail(function() {
+        console.error("Error loading CSV file.");
+      });
+    });
+  </script>
+  
+<div id="navbar"></div>
+
+</body>
+
+<script>
+  fetch('navbar.html')
+      .then(response => response.text())
+      .then(data => document.getElementById('navbar').innerHTML = data)
+      .catch(error => console.error('Error loading navbar:', error));
+</script>
+
+<div id="footer"></div>
+
+<script>
+    fetch('footer.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('footer').innerHTML = data)
+        .catch(error => console.error('Error loading footer:', error));
+</script>
+
+</html>

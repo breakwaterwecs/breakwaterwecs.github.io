@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="./resources/ol.css">
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+    <link href="resources/ol-geocoder.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+    <link rel="stylesheet" href="./resources/qgis2web.css">
+    <style>
+    html, body {
+        background-color: #f8050500;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    
+    body.home {
+        background: url('./images/backgroundHome.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: grid;
+        grid-template-rows: 1fr 1fr 1fr; /* Divide the page into three equal rows */
+        color: white;
+        text-align: center;
+        margin-top: 0em; /* To ensure the content is not hidden behind the fixed nav */
+    }
+    #content {
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 20px; /* Padding around the text */
+        display: inline-block; /* Only wrap the background around the content */
+        /*max-width: 1500px; /* Limit the width of the content */
+        /*margin: 4em auto; /* Center horizontally and add space from the top with the margin */
+        position: relative; /* Allow fine-tuning of the position */
+        top: -5em; /* Move the content down to fine-tune vertical positioning */
+        }
+    #content h1 {
+    font-size: 36px; /* Adjust the size of the heading */
+    }
+    #content p {
+    font-size: 16px; /* Adjust the size of the heading */
+    }
+    .content-wrapper {
+        width: 100%;
+        max-width: 800px;
+    }
+    .content-wrapper img {
+        max-width: 100%;
+        height: auto;
+        margin: 1em 0;
+    }
+    </style>
+    <title>Breakwater-integrated WECs</title>
+</head>
+<body class="home">
+
+    <div id="navbar"></div>
+
+    <div id="content">
+        <h1>Breakwater-integrated WECs database</h1>
+        <p>Welcome to the first database of Wave Energy Converters integrated into breakwaters.</p>
+        <p>This is an unofficial database and is for informational purposes only.</p>
+        <!-- <img src="image1.jpg" alt="Sample Image 1"> */
+        <p>Additional content below the image.</p>
+        <img src="image2.jpg" alt="Sample Image 2"> -->
+    </div>
+    <div class="spacer"></div>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(error => console.error('Error loading navbar:', error));
+    </script>
+
+    <div id="footer"></div>
+
+    <script>
+        fetch('footer.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('footer').innerHTML = data)
+            .catch(error => console.error('Error loading footer:', error));
+    </script>
+
+</body>
+</html>

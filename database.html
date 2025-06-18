@@ -41,6 +41,13 @@
       width: 100%;
       margin: 20px 0;
     }
+
+    .table-container {
+      padding-left: 20px;
+      padding-right: 20px;
+      overflow-x: auto; /* Still allows horizontal scrolling if table is too wide */
+    }
+
     #csv-table {
       border-collapse: collapse;
     }
@@ -107,14 +114,22 @@
     }
 
   </style>
+  <style>
+    /* Add left and right padding to table cells */
+    #csv-table th, #csv-table td {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  </style>
 </head>
 <body>
 
-
+<div class="table-container">
   <table id="csv-table">
     <thead></thead>
     <tbody></tbody>
   </table>
+</div>
 
   <script>
     $(document).ready(function() {
@@ -172,21 +187,6 @@
 });
       }).fail(function() {
         console.error("Error loading CSV file.");
-      });
-    });
-  </script>
-  <script>
-    $(document).ready(function() {
-      $('#csv-table').DataTable({
-        scrollX: true,
-        "pageLength": 10,
-        "lengthMenu": [5, 10, 25, 50],
-        "columnDefs": [
-          {
-            "targets": [12, 14, 15, -1],
-            "visible": false
-          },
-        ]
       });
     });
   </script>

@@ -16,21 +16,50 @@
         background-color: #ffffff;
         margin: 0;
         padding: 0;
-        font-family: Arial, sans-serif;
+        font-family: Montserrat, sans-serif;
     }
 
-    .centered-form {
-        margin-top: 0px;      /* Adds space before the form */
+    .main-layout {
         display: flex;
-        justify-content: center; /* Centers horizontally */
-        align-items: center;     /* Centers vertically if you want full height */
-        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2em;
+        padding: 2em;
+        margin: 4em auto; /* Center horizontally and add space from the top with the margin */
+        flex-wrap: wrap; /* Enables wrapping on small screens */
+    }
+
+    #content, .centered-form {
+        background-color: rgba(7, 0, 0, 0.3);
+        color: #ffffff;
+        padding: 20px;
+        flex: 1 1 45%; /* Grow/shrink but default to 45% width */
+        box-sizing: border-box;
+        min-width: 300px;
+    }
+
+    .centered-form iframe {
+        width: 100%;
+        height: 700px;
+        border: none;
     }
 
     body {
         background: url('./images/wavesOcean.jpg') no-repeat center center fixed;
         background-size: cover;
         margin-top: 0em; /* To ensure the content is not hidden behind the fixed nav */
+        padding: 0;
+    }
+    body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('./images/wavesOcean.jpg') no-repeat center center;
+    background-size: cover;
+    z-index: -1;
     }
     #content {
         background-color: rgba(7, 0, 0, 0.3);
@@ -38,7 +67,6 @@
         padding: 20px; /* Padding around the text */
         display: inline-block; /* Only wrap the background around the content */
         /*max-width: 1500px; /* Limit the width of the content */
-        margin: 4em auto; /* Center horizontally and add space from the top with the margin */
         position: relative; /* Allow fine-tuning of the position */
         top: 0em; /* Move the content down to fine-tune vertical positioning */
         }
@@ -64,13 +92,13 @@
 <div id="navbar"></div>
 
 <body>
-
+<div class="main-layout">
     <div id="content">
         <h1>About</h1>
         <p>This database was created for informational purposes by Tomás Calheiros Cabral.</p>
         <p>The database may not be accurate and is constantly being updated.</p>
         <p>Feel free to submit any suggestions to <a href="mailto:breakwaterintegratedwecs@gmail.com">breakwaterintegratedwecs@gmail.com</a>.</p>
-        <p>How to cite: Calheiros-Cabral et al. (2025). "Harnessing Wave Energy Through Breakwater Integration: A Review of Technologies, Deployment Strategies and an Open-Access Database". Unpublished manuscript, under review at Renewable and Sustainable Energy Reviews.</p> 
+        <p style="margin-top: 3em;"><b>How to cite:</b> Calheiros-Cabral et al. (2025). <i>"Harnessing Wave Energy Through Breakwater Integration: A Review of Technologies, Deployment Strategies and an Open-Access Database"</i>. Accepted for publication at Renewable and Sustainable Energy Reviews.</p>
     </div>
 
     <div class="centered-form">
@@ -79,6 +107,7 @@
             <iframe src="https://forms.gle/H4FmvDUhaVF9WUeG7" width="100%" height="400" frameborder="0">Loading…</iframe>
           </form>
     </div>
+</div>
 
     <script>
         fetch('navbar.html')

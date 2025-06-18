@@ -19,7 +19,7 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow-x: auto; /* prevent horizontal scroll */
+      //overflow-x: auto; /* prevent horizontal scroll */
       overflow-y: auto;   /* allow vertical scroll only if needed */  
     }
     body {
@@ -172,6 +172,21 @@
 });
       }).fail(function() {
         console.error("Error loading CSV file.");
+      });
+    });
+  </script>
+  <script>
+    $(document).ready(function() {
+      $('#csv-table').DataTable({
+        scrollX: true,
+        "pageLength": 10,
+        "lengthMenu": [5, 10, 25, 50],
+        "columnDefs": [
+          {
+            "targets": [12, 14, 15, -1],
+            "visible": false
+          },
+        ]
       });
     });
   </script>

@@ -19,6 +19,14 @@
         font-family: Arial, sans-serif;
     }
 
+    .centered-form {
+        margin-top: 0px;      /* Adds space before the form */
+        display: flex;
+        justify-content: center; /* Centers horizontally */
+        align-items: center;     /* Centers vertically if you want full height */
+        flex-direction: column;
+    }
+
     body {
         background: url('./images/wavesOcean.jpg') no-repeat center center fixed;
         background-size: cover;
@@ -63,7 +71,13 @@
         <p>The database may not be accurate and is constantly being updated.</p>
         <p>Feel free to submit any suggestions to <a href="mailto:breakwaterintegratedwecs@gmail.com">breakwaterintegratedwecs@gmail.com</a>.</p>
         <p>How to cite: Calheiros-Cabral et al. (2025). "Harnessing Wave Energy Through Breakwater Integration: A Review of Technologies, Deployment Strategies and an Open-Access Database". Unpublished manuscript, under review at Renewable and Sustainable Energy Reviews.</p> 
+    </div>
 
+    <div class="centered-form">
+        <form>
+            <h2>Send your contribution to the database by filling out the form below:</h2>
+            <iframe src="https://forms.gle/H4FmvDUhaVF9WUeG7" width="100%" height="400" frameborder="0">Loading…</iframe>
+          </form>
     </div>
 
     <script>

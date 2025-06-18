@@ -64,7 +64,7 @@
   <script>
     $(document).ready(function() {
       $.ajax({
-        url: 'data.csv' + new Date().getTime(),  // Cache-busting query string
+        url: 'data.csv?t=' + new Date().getTime(),  // Cache-busting query string
         dataType: 'text',
       }).done(function(csvData) {
         // Remove any empty lines and split CSV into rows

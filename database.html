@@ -6,6 +6,8 @@
   <title>Breakwater-integrated WECs</title>
   
   <!-- Include jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   
   <!-- Include DataTables CSS -->
@@ -56,7 +58,7 @@
     #csv-table th,
     #csv-table td {
       padding: 2px;
-      border: 1px solid rgb(59, 59, 59);
+      border: 1px solid rgb(0, 0, 0);
       text-align: center;
     }
     #csv-table th {
@@ -86,6 +88,10 @@
       color: rgb(0, 0, 0); /* change to your desired color */
     }
 
+    .dataTables_filter label {
+      color: rgb(0, 0, 0); !important;
+    }
+
     /* "Showing ... of ..." info text */
     .dataTables_info {
       color: rgb(0, 0, 0) !important; /* change to your desired color */
@@ -111,16 +117,48 @@
     /* Prevent hover effect on disabled buttons */
     .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover,
     .dataTables_wrapper .dataTables_paginate .paginate_button.paginate_button_disabled:hover {
-      color: rgb(63, 63, 63) !important; /* same color as disabled */
+      color: rgb(0, 0, 0) !important; /* same color as disabled */
       cursor: default; /* no pointer cursor */
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      font-size: 0.95em;
+      line-height: 1.5em;
+      color: black;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 1.3em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
 
   </style>
   <style>
     /* Add left and right padding to table cells */
     #csv-table th, #csv-table td {
-      padding-left: 16px;
-      padding-right: 16px;
+      padding-left: 9px;
+      padding-right: 9px;
     }
   </style>
 </head>
@@ -133,67 +171,122 @@
   </table>
 </div>
 
-  <script>
-    $(document).ready(function() {
-      $.ajax({
-        url: 'data.csv?t=' + new Date().getTime(),  // Cache-busting query string
-        dataType: 'text',
-      }).done(function(csvData) {
-        // Remove any empty lines and split CSV into rows
-        const rows = csvData.split("\n").filter(row => row.trim() !== "");
-        const headers = rows[0].split(",");
-        const data = rows.slice(1).map(row => row.split(","));
+<script>
+  $(document).ready(function() {
+    $.ajax({
+      url: 'data.csv?t=' + new Date().getTime(),
+      dataType: 'text',
+    }).done(function(csvData) {
+      const parsed = Papa.parse(csvData.trim(), { header: false, delimiter: ";" });
+      const rows = parsed.data;
+      const headers = rows[0];
+      const data = rows.slice(1);
 
-        // Build table header
-        let headerHtml = '';
-        headers.forEach(header => {
-          headerHtml += `<th>${header.trim()}</th>`;
-        });
-        $('#csv-table thead').html(`<tr>${headerHtml}</tr>`);
-
-        // Build table rows
-        let bodyHtml = '';
-        data.forEach(row => {
-          bodyHtml += `<tr>${row.map((cell, index) => {
-            // Check for the "Relevant papers" column (index 13)
-            if (index === 13) {
-              // Remove wrapping quotes, if any
-              let cleanCell = cell.trim().replace(/^"|"$/g, '');
-              // Check if there are multiple links separated by a semicolon
-              if (cleanCell.indexOf(';') !== -1) {
-                const links = cleanCell.split(';');
-                return `<td>${links.map(link => {
-                  const trimmed = link.trim();
-                  return `<a href="${trimmed}" target="_blank">${trimmed}</a>`;
-                }).join('<br/>')}</td>`;
-              } else {
-                // Only one link in the cell
-                return `<td><a href="${cleanCell}" target="_blank">${cleanCell}</a></td>`;
-              }
-            }
-            return `<td>${cell.trim()}</td>`;
-          }).join('')}</tr>`;
-        });
-        $('#csv-table tbody').html(bodyHtml);
-
-        // Initialize DataTables
-        $('#csv-table').DataTable({
-          "pageLength": 10,  // Default number of rows per page
-          "lengthMenu": [5, 10, 25, 50],  // Options for rows per page
-          "columnDefs": [
-            {
-              "targets": [12, 14, 15, -1], // Indexes of columns to hide
-              "visible": false // Hide these columns
-            },          
-          ]
-});
-      }).fail(function() {
-        console.error("Error loading CSV file.");
+      // Build table header
+      let headerHtml = '';
+      headers.forEach(header => {
+        headerHtml += `<th>${header.trim()}</th>`;
       });
+      $('#csv-table thead').html(`<tr>${headerHtml}</tr>`);
+
+      // Build map: data column index → corresponding Ref_ column index
+      const refMap = {};
+      headers.forEach((header, refIdx) => {
+        const match = header.trim().match(/^Ref_(.+)$/);
+        if (match) {
+          const targetHeader = match[1].trim();
+          const dataIdx = headers.findIndex(h => h.trim() === targetHeader);
+          if (dataIdx !== -1) {
+            refMap[dataIdx] = refIdx;
+          }
+        }
+      });
+
+      const referenceStore = {};
+      let refCounter = 1;
+      let bodyHtml = '';
+
+      data.forEach((row, rowIndex) => {
+        bodyHtml += '<tr>';
+        row.forEach((cell, colIndex) => {
+          const content = cell.trim();
+
+          if (refMap.hasOwnProperty(colIndex)) {
+            const refColIndex = refMap[colIndex];
+            const refCell = (row[refColIndex] || "").trim();
+
+            if (refCell) {
+              const refId = `ref-${rowIndex}-${colIndex}`;
+              referenceStore[refId] = refCell;
+              bodyHtml += `<td>${content} <sup><a href="#" onclick="openModal('${refId}'); return false;">[${refCounter++}]</a></sup></td>`;
+            } else {
+              bodyHtml += `<td>${content}</td>`;
+            }
+
+          } else if (!Object.values(refMap).includes(colIndex)) {
+            // Not a reference column — just render normally
+            bodyHtml += `<td>${content}</td>`;
+          }
+        });
+        bodyHtml += '</tr>';
+      });
+
+      $('#csv-table tbody').html(bodyHtml);
+
+      const extraHiddenCols = [];
+      ['Figure', 'Comments', 'Latitude', 'Longitude'].forEach(colName => {
+        const idx = headers.findIndex(h => h.trim() === colName);
+        if (idx !== -1) extraHiddenCols.push(idx);
+      });
+
+      const hiddenCols = [...Object.values(refMap), ...extraHiddenCols];
+
+      // then initialize DataTable with hiddenCols
+      $('#csv-table').DataTable({
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50],
+        columnDefs: [
+          {
+            targets: hiddenCols,
+            visible: false
+          }
+        ]
+      });
+      // Store reference data globally for modal use
+      window.referenceMap = referenceStore;
+
+    }).fail(function() {
+      console.error("Error loading CSV file.");
     });
-  </script>
+  });
+
+  function openModal(refId) {
+    const modalText = window.referenceMap?.[refId] || "Reference not found.";
+    document.getElementById('modal-text').innerText = modalText;
+    document.getElementById('modal').style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('modal');
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+</script>
+
   
 <div id="navbar"></div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div id="modal-text"></div>
+  </div>
+</div>
 
 </body>
 
@@ -211,6 +304,25 @@
         .then(response => response.text())
         .then(data => document.getElementById('footer').innerHTML = data)
         .catch(error => console.error('Error loading footer:', error));
+</script>
+
+<script>
+  function openModal(refId) {
+    const modalText = window.referenceMap?.[refId] || "Reference not found.";
+    document.getElementById('modal-text').innerText = modalText;
+    document.getElementById('modal').style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('modal');
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
 </script>
 
 </html>

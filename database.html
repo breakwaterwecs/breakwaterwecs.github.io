@@ -243,20 +243,7 @@
       position: relative;
     }
     
-    /* Show full content on hover */
-    #csv-table td:last-child:hover {
-      white-space: normal;
-      overflow: visible;
-      background-color: #f9f9f9;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      z-index: 999;
-      position: relative;
-      border: 1px solid #ddd;
-      padding: 8px;
-      word-break: break-word;
-      min-width: 300px;
-      max-width: 500px;
-    }
+
     
     /* Style links in the relevant papers column */
     #csv-table td:last-child a {
@@ -347,11 +334,13 @@
 
   function processRelevantPapersLinks(content) {
     if (!content || content.trim() === '') return '';
+    console.log('Processing links for content:', content);
     
     // Split content by semicolons
     const items = content.split(';').map(item => item.trim()).filter(item => item);
+    console.log('Split items:', items);
     
-    return items.map(item => {
+    const result = items.map((item, index) => {
       // Treat every item as a website URL
       let href = item;
       
@@ -360,9 +349,14 @@
         href = 'https://' + href;
       }
       
-      // Create clickable link for every item
-      return `<a href="${href}" target="_blank" style="color: #0066cc; text-decoration: underline; cursor: pointer;">${item}</a>`;
+      console.log('Creating link for:', item, 'with href:', href);
+      
+      // Use the simplest possible approach - direct onclick with tooltip
+      return '<a href="#" onclick="window.open(\'' + href.replace(/'/g, "\\'") + '\', \'_blank\'); return false;" title="' + href.replace(/"/g, '&quot;') + '" style="color: #0066cc; text-decoration: underline; cursor: pointer;">' + item + '</a>';
     }).join('<br>');
+    
+    console.log('Final result:', result);
+    return result;
   }
 
   $(document).ready(function() {
@@ -418,13 +412,23 @@
             }
 
           } else if (!Object.values(refMap).includes(colIndex)) {
-            // Not a reference column — check if it's the last column (Relevant papers)
-            if (colIndex === headers.length - 1) {
-              // This is the last column (Relevant papers) - process links
-              const processedContent = processRelevantPapersLinks(content);
-              bodyHtml += `<td>${processedContent}</td>`;
+            // Not a reference column — check if it's the "Relevant papers" column
+            if (colIndex < headers.length && headers[colIndex]) {
+              const columnHeader = headers[colIndex].trim();
+              console.log('Processing column:', columnHeader, 'at index:', colIndex);
+              
+              if (columnHeader === 'Relevant papers') {
+                // This is the "Relevant papers" column - process links
+                console.log('Found Relevant papers column with content:', content);
+                const processedContent = processRelevantPapersLinks(content);
+                bodyHtml += `<td>${processedContent}</td>`;
+              } else {
+                // Regular column - process semicolon-separated content
+                const processedContent = processSemicolonSeparatedContent(content);
+                bodyHtml += `<td>${processedContent}</td>`;
+              }
             } else {
-              // Regular column - process semicolon-separated content
+              // Column index out of bounds, treat as regular content
               const processedContent = processSemicolonSeparatedContent(content);
               bodyHtml += `<td>${processedContent}</td>`;
             }
@@ -456,6 +460,7 @@
           }
         ]
       });
+      
       // Store reference data globally for modal use
       window.referenceMap = referenceStore;
 

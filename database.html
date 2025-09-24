@@ -348,20 +348,21 @@
   function processRelevantPapersLinks(content) {
     if (!content || content.trim() === '') return '';
     
-    // Split content by semicolons specifically
+    // Split content by semicolons
     const items = content.split(';').map(item => item.trim()).filter(item => item);
     
     return items.map(item => {
-      // Check if the item looks like a URL
-      const urlRegex = /(https?:\/\/[^\s]+)/gi;
-      if (urlRegex.test(item)) {
-        // Extract the URL and create a clickable link
-        return item.replace(urlRegex, '<a href="$1" target="_blank" style="color: #0066cc; text-decoration: underline;">$1</a>');
-      } else {
-        // Not a URL, return as plain text
-        return item;
+      // Treat every item as a website URL
+      let href = item;
+      
+      // Add https:// protocol if not already present
+      if (!href.startsWith('http://') && !href.startsWith('https://')) {
+        href = 'https://' + href;
       }
-    }).join('<br>'); // Join with line breaks
+      
+      // Create clickable link for every item
+      return `<a href="${href}" target="_blank" style="color: #0066cc; text-decoration: underline; cursor: pointer;">${item}</a>`;
+    }).join('<br>');
   }
 
   $(document).ready(function() {

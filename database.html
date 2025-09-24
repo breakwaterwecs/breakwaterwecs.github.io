@@ -23,7 +23,8 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: hidden; /* prevent both horizontal and vertical scroll on desktop */
+      overflow-x: hidden; /* prevent horizontal scroll on desktop */
+      overflow-y: auto; /* allow vertical scroll on desktop */
     }
     
     /* Enable scrolling on mobile devices only */

@@ -23,8 +23,68 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      //overflow-x: auto; /* prevent horizontal scroll */
-      overflow-y: auto;   /* allow vertical scroll only if needed */  
+      overflow: hidden; /* prevent both horizontal and vertical scroll on desktop */
+    }
+    
+    /* Enable scrolling on mobile devices only */
+    @media (max-width: 768px) {
+      html, body {
+        overflow-x: auto; /* Allow horizontal scroll on mobile */
+        overflow-y: auto; /* Allow vertical scroll on mobile */
+      }
+      
+      .table-container {
+        overflow-x: auto; /* Ensure table can scroll horizontally */
+      }
+      
+      /* Allow table to expand to fit content on mobile */
+      #csv-table {
+        min-width: auto !important; /* Let table size adjust to content */
+        width: auto !important; /* Auto width based on content */
+        table-layout: auto !important; /* Auto layout for content-based sizing */
+      }
+      
+      /* Regular columns: adjust width to fit content, allow multi-line for semicolon-separated content */
+      #csv-table th:not(:last-child),
+      #csv-table td:not(:last-child) {
+        white-space: normal; /* Allow line breaks for <br> tags */
+        word-wrap: normal; /* Don't break individual words */
+        overflow-wrap: normal; /* Don't break individual words */
+        width: auto; /* Let width adjust to content */
+        min-width: 80px; /* Reasonable minimum */
+        vertical-align: middle; /* Center content vertically */
+      }
+      
+      /* Ensure table rows can expand in height */
+      #csv-table tr {
+        height: auto; /* Allow rows to expand */
+      }
+      
+      #csv-table td {
+        height: auto; /* Allow cells to expand vertically */
+        line-height: 1.3; /* Better line spacing for multi-line content */
+      }
+      
+      /* Headers can wrap words (but not break words) and are centered */
+      #csv-table th:not(:last-child) {
+        white-space: normal; /* Allow header text to wrap */
+        word-break: keep-all; /* Don't break words in headers */
+        overflow-wrap: break-word; /* Only break very long words if absolutely necessary */
+        text-align: center; /* Center horizontally */
+        vertical-align: middle; /* Center vertically */
+      }
+      
+      /* Keep the relevant papers column with truncation */
+      #csv-table th:last-child,
+      #csv-table td:last-child {
+        width: 200px;
+        max-width: 200px;
+        min-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle; /* Center content vertically */
+      }
     }
     body {
       background: url("./images/wavesOcean.jpg") no-repeat center center fixed;
@@ -91,7 +151,7 @@
     }
 
     .dataTables_filter label {
-      color: rgb(0, 0, 0); !important;
+      color: rgb(0, 0, 0) !important;
     }
 
     /* "Showing ... of ..." info text */
@@ -166,8 +226,97 @@
   <style>
     /* Add left and right padding to table cells */
     #csv-table th, #csv-table td {
-      padding-left: 9px;
-      padding-right: 9px;
+      padding-left: 4px;
+      padding-right: 4px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+    
+    /* Fixed width and truncation for the last column (Relevant papers) */
+    #csv-table th:last-child,
+    #csv-table td:last-child {
+      width: 200px;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+    }
+    
+    /* Show full content on hover */
+    #csv-table td:last-child:hover {
+      white-space: normal;
+      overflow: visible;
+      background-color: #f9f9f9;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 999;
+      position: relative;
+      border: 1px solid #ddd;
+      padding: 8px;
+      word-break: break-word;
+      min-width: 300px;
+      max-width: 500px;
+    }
+    
+    /* Style links in the relevant papers column */
+    #csv-table td:last-child a {
+      color: #0066cc;
+      text-decoration: underline;
+    }
+    
+    #csv-table td:last-child a:hover {
+      color: #004499;
+      text-decoration: none;
+    }
+    
+    /* Make table responsive and fit screen width */
+    .table-container {
+      overflow-x: auto; /* Allow horizontal scroll when needed */
+    }
+    
+    #csv-table {
+      width: 100% !important;
+      min-width: 800px; /* Ensure table is wide enough to scroll on mobile */
+      table-layout: fixed; /* Fixed layout for consistent column widths */
+    }
+    
+    /* Set specific column widths to fit screen */
+    #csv-table th,
+    #csv-table td {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    /* Only the last column (Relevant papers) should have truncation - already styled above */
+    /* All other columns will wrap text naturally */
+    
+    /* Desktop styles - prevent word breaking and overflow */
+    @media (min-width: 769px) {
+      #csv-table {
+        table-layout: auto !important; /* Auto layout for content-based sizing */
+        width: auto !important; /* Let table expand to fit content */
+      }
+      
+      #csv-table th:not(:last-child),
+      #csv-table td:not(:last-child) {
+        white-space: normal; /* Allow line breaks for <br> tags */
+        word-break: keep-all; /* Don't break words */
+        overflow-wrap: normal; /* Don't break words */
+        hyphens: none; /* No hyphenation */
+        width: auto; /* Let width adjust to content */
+        min-width: fit-content; /* Ensure cell is wide enough for content */
+      }
+      
+      /* Headers centered on desktop too */
+      #csv-table th:not(:last-child) {
+        text-align: center;
+        vertical-align: middle;
+      }
+      
+      /* Ensure table container can handle wider content */
+      .table-container {
+        overflow-x: auto; /* Allow horizontal scroll if table gets very wide */
+      }
     }
   </style>
 </head>
@@ -181,6 +330,40 @@
 </div>
 
 <script>
+  function processSemicolonSeparatedContent(content) {
+    if (!content || content.trim() === '') return '';
+    
+    // Split content by semicolons
+    const items = content.split(';').map(item => item.trim()).filter(item => item);
+    
+    // If only one item, return as is
+    if (items.length <= 1) {
+      return content;
+    }
+    
+    // Multiple items: join with line breaks
+    return items.join('<br>');
+  }
+
+  function processRelevantPapersLinks(content) {
+    if (!content || content.trim() === '') return '';
+    
+    // Split content by semicolons specifically
+    const items = content.split(';').map(item => item.trim()).filter(item => item);
+    
+    return items.map(item => {
+      // Check if the item looks like a URL
+      const urlRegex = /(https?:\/\/[^\s]+)/gi;
+      if (urlRegex.test(item)) {
+        // Extract the URL and create a clickable link
+        return item.replace(urlRegex, '<a href="$1" target="_blank" style="color: #0066cc; text-decoration: underline;">$1</a>');
+      } else {
+        // Not a URL, return as plain text
+        return item;
+      }
+    }).join('<br>'); // Join with line breaks
+  }
+
   $(document).ready(function() {
     $.ajax({
       url: 'data.csv?t=' + new Date().getTime(),
@@ -229,12 +412,21 @@
               referenceStore[refId] = refCell;
               bodyHtml += `<td>${content} <sup><a href="#" onclick="openModal('${refId}'); return false;">[${refCounter++}]</a></sup></td>`;
             } else {
-              bodyHtml += `<td>${content}</td>`;
+              const processedContent = processSemicolonSeparatedContent(content);
+              bodyHtml += `<td>${processedContent}</td>`;
             }
 
           } else if (!Object.values(refMap).includes(colIndex)) {
-            // Not a reference column — just render normally
-            bodyHtml += `<td>${content}</td>`;
+            // Not a reference column — check if it's the last column (Relevant papers)
+            if (colIndex === headers.length - 1) {
+              // This is the last column (Relevant papers) - process links
+              const processedContent = processRelevantPapersLinks(content);
+              bodyHtml += `<td>${processedContent}</td>`;
+            } else {
+              // Regular column - process semicolon-separated content
+              const processedContent = processSemicolonSeparatedContent(content);
+              bodyHtml += `<td>${processedContent}</td>`;
+            }
           }
         });
         bodyHtml += '</tr>';
@@ -254,6 +446,8 @@
       $('#csv-table').DataTable({
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50],
+        scrollX: false,
+        autoWidth: false,
         columnDefs: [
           {
             targets: hiddenCols,

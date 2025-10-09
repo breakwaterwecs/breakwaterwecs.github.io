@@ -131,6 +131,17 @@
       color: white;
     }
 
+    /* Table font size: default and responsive overrides */
+    #csv-table, #csv-table th, #csv-table td {
+      font-size: 12px; /* Default desktop/tablet size */
+    }
+
+    @media (max-width: 768px) {
+      #csv-table, #csv-table th, #csv-table td {
+        font-size: 12px; /* Slightly smaller on mobile to improve fit */
+      }
+    }
+
     /* Search input box */
     .dataTables_filter input {
       background-color: white !important;
